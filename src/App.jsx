@@ -4,6 +4,7 @@ import { Square } from './components/Square'
 import { TURNS } from './constants'
 import { checkWinnerFrom, checkEndGame } from './logic/board'
 import { Winner } from './components/Winner'
+import { saveGameStorage, resetGameStorage } from './logic/storage'
 import './App.css'
 
 
@@ -14,7 +15,7 @@ function App() {
     return boardFromStorage ? JSON.parse(boardFromStorage) :
     Array(9).fill(null)
   })
-
+  
   const [turn, setTurn] = useState(() => {
     const turnFromStorage = window.localStorage.getItem('turn')
     return turnFromStorage ?? TURNS.x
@@ -27,22 +28,24 @@ function App() {
     setTurn(TURNS.x)
     setWinner(null)
 
-    window.localStorage.removeItem('board')
-    window.localStorage.removeItem('turn')
+    resetGameStorage()
   }
-
+  
   const updateBoard = (index) => {
+    // No actualizamos esta posicion si tenemos algo
     if (board[index] || winner ) return
 
+    // Actualizacion del tablero
     const newBoard = [...board]
     newBoard[index] = turn
     setBoard(newBoard)
+
+    // Cambio de turno
     const newTurn = turn === TURNS.x ? TURNS.o : TURNS.x
     setTurn(newTurn)
 
     // guardamos partida
-    window.localStorage.setItem('board', JSON.stringify(newBoard))
-    window.localStorage.setItem('turn', newTurn)
+    saveGameStorage({board: newBoard, turn: newTurn})
 
     // revisamos si existe ganador
     const newWinner = checkWinnerFrom(newBoard)
